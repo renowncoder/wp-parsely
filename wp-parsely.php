@@ -108,7 +108,6 @@ class Parsely {
 		add_action( 'template_redirect', array( $this, 'parsely_add_amp_actions' ) );
 		if ( ! defined( 'WP_PARSELY_TESTING' ) ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'wp_parsely_style_init' ] );
-			add_action( 'wp_enqueue_scripts', [ $this, 'ensure_jquery_exists' ] );
 		}
 	}
 
@@ -130,13 +129,6 @@ class Parsely {
 	 */
 	public function wp_parsely_style_init() {
 		wp_enqueue_style( 'wp-parsely-style', plugins_url( 'wp-parsely.css', __FILE__ ), array(), filemtime( get_stylesheet_directory() ) );
-	}
-
-	/**
-	 * Make sure that jquery exists
-	 */
-	public function ensure_jquery_exists() {
-		wp_enqueue_script( 'jquery' );
 	}
 
 	/**
