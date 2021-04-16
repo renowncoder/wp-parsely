@@ -1113,7 +1113,7 @@ class Parsely {
 
 		wp_enqueue_script(
 			'wp-parsely-dotcom',
-			'//cdn.parsely.com/keys/' . esc_url( $parsely_options['apikey'] ) . '/p.js',
+			'https://cdn.parsely.com/keys/' . esc_url( $parsely_options['apikey'] ) . '/p.js',
 			$dependencies,
 			null, // Should we introduce a cache buster param here?
 			true
@@ -1729,7 +1729,7 @@ class Parsely {
 				}
 			}
 		</script>
-		<script data-cfasync="false" id="parsely-cfg" data-parsely-site="' . esc_attr( $options['apikey'] ) . '" src="//cdn.parsely.com/keys/' . esc_attr( $options['apikey'] ) . '/p.js"></script>
+		<script data-cfasync="false" id="parsely-cfg" data-parsely-site="' . esc_attr( $options['apikey'] ) . '" src="https://cdn.parsely.com/keys/' . esc_attr( $options['apikey'] ) . '/p.js"></script>
 		<!-- END Parse.ly Include: Standard -->';
 
 		$registry[ $identifier ] = array(
