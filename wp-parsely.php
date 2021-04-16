@@ -1106,7 +1106,7 @@ class Parsely {
 				'wp-parsely-api',
 				'wpParsely', // This globally-scoped object will hold our initialization variables
 				array(
-					'apiKey' => $parsely_options['apikey'],
+					'apikey' => $parsely_options['apikey'],
 				)
 			);
 		}

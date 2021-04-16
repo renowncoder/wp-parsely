@@ -11,9 +11,9 @@ export function initApi() {
 		return;
 	}
 
-	const { apiKey } = global.wpParsely;
+	const { apikey } = global.wpParsely;
 
-	if ( ! apiKey ) {
+	if ( ! apikey ) {
 		return;
 	}
 
@@ -27,7 +27,7 @@ export function initApi() {
 			if ( oldonload ) {
 				oldonload();
 			}
-			uuidProfileCall( { apiKey, uuid: global.PARSELY.config.parsely_site_uuid } );
+			uuidProfileCall( { apikey, uuid: global.PARSELY.config.parsely_site_uuid } );
 		};
 		return;
 	}
