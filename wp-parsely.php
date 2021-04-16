@@ -1089,30 +1089,30 @@ class Parsely {
 		}
 
 		wp_register_script(
-			'wp-parsely',
+			'wp-parsely-api',
 			plugin_dir_url( __FILE__ ) . 'build/init-api.js',
 			[ 'wp-polyfill-fetch' ],
 			defined( 'WP_DEBUG' ) ? mt_rand() : Parsely::VERSION,
 			true
 		);
 
-		wp_localize_script(
-			'wp-parsely',
-			'wpParsely', // This globally-scoped object will hold our initialization variables
-			[
-				'apiKey' => empty( $parsely_options['apikey'] ) ? '' : $parsely_options['apikey'],
-			]
-		);
-
 		add_filter( 'script_loader_tag', [ $this, 'script_loader_tag' ], 10, 3 );
 
-		$dependencies = [];
+		$dependencies = array();
+
 		if ( ! empty( $parsely_options['api_secret'] ) ) {
-			$dependencies[] = 'wp-parsely';
+			$dependencies[] = 'wp-parsely-api';
+			wp_localize_script(
+				'wp-parsely-api',
+				'wpParsely', // This globally-scoped object will hold our initialization variables
+				array(
+					'apiKey' => $parsely_options['apikey'],
+				)
+			);
 		}
 
 		wp_enqueue_script(
-			'wp-parsely-dotcom',
+			'wp-parsely-tracker',
 			'https://cdn.parsely.com/keys/' . esc_url( $parsely_options['apikey'] ) . '/p.js',
 			$dependencies,
 			null, // Should we introduce a cache buster param here?
