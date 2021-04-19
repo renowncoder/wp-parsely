@@ -162,7 +162,6 @@ PARSELYJS;
 			'Failed to confirm tracker script was enqueued'
 		);
 
-		//wp_scripts()->print_scripts();
 		wp_print_scripts();
 		$output = ob_get_clean();
 
