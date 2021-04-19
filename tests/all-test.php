@@ -90,10 +90,12 @@ class SampleTest extends ParselyTestCase {
 	 */
 	public function setUp() {
 		global $wp_scripts;
-		$wp_scripts = new \WP_Scripts();
 
 		parent::setUp();
+
+		$wp_scripts = new \WP_Scripts();
 		self::$parsely   = new \Parsely();
+
 		$option_defaults = array(
 			'apikey'                    => 'blog.parsely.com',
 			'content_id_prefix'         => '',
@@ -214,6 +216,58 @@ var wpParsely = {\"apikey\":\"blog.parsely.com\"};
 			$output,
 			'Failed to confirm script tags were printed correctly'
 		);
+	}
+
+	/**
+	 * Check the parsely page output
+	 *
+	 * @category   Function
+	 * @package    SampleTest
+	 */
+	public function test_parsely_ppage_output() {
+		$this->go_to( '/' );
+		$ppage = self::$parsely->insert_parsely_page();
+		self::assertSame( 'WebPage', $ppage['@type'] );
+		$post_array = $this->create_test_post_array();
+		$post       = $this->factory->post->create( $post_array );
+		$this->go_to( '/?p=' . $post );
+		$ppage = self::$parsely->insert_parsely_page();
+		self::assertSame( 'NewsArticle', $ppage['@type'] );
+	}
+
+	/**
+	 *  Check the category
+	 *
+	 * @category   Function
+	 * @package    SampleTest
+	 */
+	public function test_parsely_categories() {
+		$post_array                  = $this->create_test_post_array();
+		$cat                         = $this->create_test_category( 'Newssss' );
+		$post_array['post_category'] = array( $cat );
+		$post                        = $this->factory->post->create( $post_array );
+		$this->go_to( '/?p=' . $post );
+		$ppage = self::$parsely->insert_parsely_page();
+		self::assertSame( 'Newssss', $ppage['articleSection'] );
+	}
+
+	/**
+	 * Check that the tags are lowercase
+	 *
+	 * @category   Function
+	 * @package    SampleTest
+	 */
+	public function test_parsely_tags_lowercase() {
+		$post_array                = $this->create_test_post_array();
+		$post_array['tags_input']  = array( 'Sample', 'Tag' );
+		$post                      = $this->factory->post->create( $post_array );
+		$options                   = get_option( 'parsely' );
+		$options['lowercase_tags'] = true;
+		update_option( 'parsely', $options );
+		$this->go_to( '/?p=' . $post );
+		$ppage = self::$parsely->insert_parsely_page();
+		self::assertContains( 'sample', $ppage['keywords'] );
+		self::assertContains( 'tag', $ppage['keywords'] );
 	}
 
 	/**
