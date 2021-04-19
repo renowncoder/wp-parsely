@@ -67,13 +67,6 @@ class SampleTest extends ParselyTestCase {
 	protected static $taxonomy_factory;
 
 	/**
-	 * Internal variables
-	 *
-	 * @var string $parsely_html A chunk of HTML that we look for a page.
-	 */
-	protected static $parsely_html;
-
-	/**
 	 * The setUp before the entire class
 	 *
 	 * @category   Function
@@ -108,11 +101,6 @@ class SampleTest extends ParselyTestCase {
 			'track_page_types'          => array( 'page' ),
 		);
 		update_option( 'parsely', $option_defaults );
-
-		// TODO: Check other usages of $parsely_html to make sure they still make sense
-		self::$parsely_html = <<<PARSELYJS
-<script data-cfasync="false" id="parsely-cfg" data-parsely-site="blog.parsely.com" src="//cdn.parsely.com/keys/blog.parsely.com/p.js"></script>
-PARSELYJS;
 	}
 
 	public function test_class_version() {
@@ -139,7 +127,7 @@ PARSELYJS;
 		$post_array = $this->create_test_post_array();
 		$post       = $this->factory->post->create( $post_array );
 		$this->go_to( '/?p=' . $post );
-		echo esc_html( self::$parsely->insert_parsely_javascript() );
+		echo self::$parsely->insert_parsely_javascript();
 
 		$intermediate_output = ob_get_contents();
 		self::assertEquals(
@@ -184,7 +172,7 @@ PARSELYJS;
 		$post_array = $this->create_test_post_array();
 		$post       = $this->factory->post->create( $post_array );
 		$this->go_to( '/?p=' . $post );
-		echo esc_html( self::$parsely->insert_parsely_javascript() );
+		echo self::$parsely->insert_parsely_javascript();
 
 		$intermediate_output = ob_get_contents();
 		self::assertEquals(
@@ -512,10 +500,45 @@ var wpParsely = {\"apikey\":\"blog.parsely.com\"};
 		update_option( 'parsely', $options );
 		$new_user = $this->create_test_user( 'bill_brasky' );
 		wp_set_current_user( $new_user );
+
 		ob_start();
-		echo esc_html( self::$parsely->insert_parsely_javascript() );
+		echo self::$parsely->insert_parsely_javascript();
+
+		$intermediate_output = ob_get_contents();
+		self::assertEquals(
+			'',
+			$intermediate_output,
+			'Failed to confirm scripts were not printed by insert_parsely_javascript()'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-api', 'registered' ),
+			'Failed to confirm API script was not registered'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-api', 'enqueued' ),
+			'Failed to confirm API script was not enqueued'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-tracker', 'registered' ),
+			'Failed to confirm tracker script was not registered'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-tracker', 'enqueued' ),
+			'Failed to confirm tracker script was not enqueued'
+		);
+
+		wp_print_scripts();
 		$output = ob_get_clean();
-		self::assertNotContains( self::$parsely_html, $output );
+
+		self::assertEquals(
+			'',
+			$output,
+			'Failed to confirm script tags were not printed'
+		);
 	}
 
 	/**
@@ -552,17 +575,79 @@ var wpParsely = {\"apikey\":\"blog.parsely.com\"};
 		self::assertFalse( is_user_member_of_blog( $new_user, $second_blog ) );
 
 		ob_start();
-		echo esc_html( self::$parsely->insert_parsely_javascript() );
+		echo self::$parsely->insert_parsely_javascript();
+
+		$intermediate_output = ob_get_contents();
+		self::assertEquals(
+			'',
+			$intermediate_output,
+			'Failed to confirm scripts were not printed by insert_parsely_javascript()'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-api', 'registered' ),
+			'Failed to confirm API script was not registered'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-api', 'enqueued' ),
+			'Failed to confirm API script was not enqueued'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-tracker', 'registered' ),
+			'Failed to confirm tracker script was not registered'
+		);
+
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-tracker', 'enqueued' ),
+			'Failed to confirm tracker script was not enqueued'
+		);
+
+		wp_print_scripts();
 		$output = ob_get_clean();
-		self::assertNotContains( self::$parsely_html, $output );
+
+		self::assertEquals(
+			'',
+			$output,
+			'Failed to confirm script tags were not printed'
+		);
 
 		switch_to_blog( $second_blog );
 		self::assertEquals( get_current_blog_id(), $second_blog );
 		self::assertFalse( is_user_member_of_blog( $new_user, get_current_blog_id() ) );
 
 		ob_start();
-		echo esc_html( self::$parsely->insert_parsely_javascript() );
+		echo self::$parsely->insert_parsely_javascript();
+
+		$intermediate_output = ob_get_contents();
+		self::assertEquals(
+			'',
+			$intermediate_output,
+			'Failed to confirm scripts were not printed by insert_parsely_javascript()'
+		);
+
+		self::assertTrue(
+			wp_script_is( 'wp-parsely-api', 'registered' ),
+			'Failed to confirm API script was registered'
+		);
+		self::assertFalse(
+			wp_script_is( 'wp-parsely-api', 'enqueued' ),
+			'Failed to confirm API script was not enqueued'
+		);
+
+		self::assertTrue(
+			wp_script_is( 'wp-parsely-tracker', 'enqueued' ),
+			'Failed to confirm tracker script was enqueued'
+		);
+
+		wp_print_scripts();
 		$output = ob_get_clean();
-		self::assertContains( self::$parsely_html, $output );
+
+		self::assertEquals(
+			"<script type='text/javascript' src='https://cdn.parsely.com/keys/http://blog.parsely.com/p.js?ver=" . PARSELY_VERSION . "' id='wp-parsely-tracker-js'></script>\n",
+			$output,
+			'Failed to confirm script tags were printed correctly'
+		);
 	}
 }
