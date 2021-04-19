@@ -1,5 +1,5 @@
 function initAdmin() {
-	document.defaultView.addEventListener( 'DOMContentLoaded', () => {
+	wp.domReady( () => {
 		const keyEl = document.querySelector( '#apikey' );
 		const requiresRecrawlNotice = document.querySelectorAll(
 			'div.parsely-form-controls[data-requires-recrawl="true"] .help-text'
