@@ -127,6 +127,10 @@ PARSELYJS;
 		self::assertEquals( PARSELY_VERSION, \Parsely::get_asset_cache_buster() );
 	}
 
+	public function test_plugin_url_constant() {
+		self::assertTrue( defined( 'PARSELY_PLUGIN_URL' ) && is_string( PARSELY_PLUGIN_URL ) && strlen( PARSELY_PLUGIN_URL ) > 0 );
+	}
+
 	/**
 	 * Test the default parsely script enqueues.
 	 */
@@ -210,7 +214,7 @@ PARSELYJS;
 var wpParsely = {\"apikey\":\"blog.parsely.com\"};
 /* ]]> */
 </script>
-<script type='text/javascript' src='http://example.org/wp-content/plugins/Users/jeff/Local%20Sites/parsely-testing/app/public/wp-content/plugins/wp-parsely/build/init-api.js?ver=" . PARSELY_VERSION . "' id='wp-parsely-api-js'></script>
+<script type='text/javascript' src='" . esc_url( PARSELY_PLUGIN_URL ) . "build/init-api.js?ver=" . PARSELY_VERSION . "' id='wp-parsely-api-js'></script>
 <script type='text/javascript' src='https://cdn.parsely.com/keys/http://blog.parsely.com/p.js?ver=" . PARSELY_VERSION . "' id='wp-parsely-tracker-js'></script>
 ",
 			$output,
