@@ -106,9 +106,13 @@ class Parsely {
 		add_action( 'save_post', array( $this, 'update_metadata_endpoint' ) );
 		add_action( 'instant_articles_compat_registry_analytics', array( $this, 'insert_parsely_tracking_fbia' ) );
 		add_action( 'template_redirect', array( $this, 'parsely_add_amp_actions' ) );
-		if ( ! defined( 'WP_PARSELY_TESTING' ) ) {
+		if ( ! self::is_test_env() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'wp_parsely_style_init' ] );
 		}
+	}
+
+	static function is_test_env() {
+		return defined( 'WP_PARSELY_TESTING' );
 	}
 
 	/**
@@ -149,7 +153,7 @@ class Parsely {
 			'wp-parsely-admin',
 			plugin_dir_url( __FILE__ ) . 'build/admin-page.js',
 			[],
-			defined( 'WP_DEBUG' ) ? mt_rand() : Parsely::VERSION,
+			self::get_asset_cache_buster(),
 			true
 		);
 	}
@@ -1053,6 +1057,22 @@ class Parsely {
 		}
 	}
 
+	public static function get_asset_cache_buster() {
+		static $cache_buster;
+		if ( isset( $cache_buster ) ) {
+			return $cache_buster;
+		}
+
+		$cb = null;
+		if ( defined( 'WP_DEBUG' ) && ! self::is_test_env() ) {
+			$cb = mt_rand();
+		} else {
+			$cb = PARSELY_VERSION;
+		}
+		$cache_buster = apply_filters( 'wp_parsely_cache_buster', $cb );
+		return $cache_buster;
+	}
+
 	/**
 	 * Inserts the JavaScript code required to send off beacon requests
 	 */
@@ -1092,7 +1112,7 @@ class Parsely {
 			'wp-parsely-api',
 			plugin_dir_url( __FILE__ ) . 'build/init-api.js',
 			[ 'wp-polyfill-fetch' ],
-			defined( 'WP_DEBUG' ) ? mt_rand() : Parsely::VERSION,
+			self::get_asset_cache_buster(),
 			true
 		);
 
@@ -1115,7 +1135,7 @@ class Parsely {
 			'wp-parsely-tracker',
 			'https://cdn.parsely.com/keys/' . esc_url( $parsely_options['apikey'] ) . '/p.js',
 			$dependencies,
-			null, // Should we introduce a cache buster param here?
+			self::get_asset_cache_buster(),
 			true
 		);
 	}
