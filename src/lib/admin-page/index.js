@@ -1,7 +1,9 @@
+import App from './components/App';
+
 function initAdmin() {
 	wp.domReady( () => {
 		wp.element.render(
-			<h3>¡Hola mundo!</h3>,
+			<App />,
 			document.getElementById( 'wp-parsely-react-entrypoint' )
 		);
 
