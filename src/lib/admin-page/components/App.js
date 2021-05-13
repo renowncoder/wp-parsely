@@ -18,16 +18,17 @@ const App = () => {
 
 	const handleFormSubmit = e => {
 		e.preventDefault();
+		console.log('submitting a form to do form things')
 		// send form data to php somehow
 	}
 
 	return (
-		<form onSubmit={e => handleFormSubmit(e)}>
+		<form  onSubmit={e => handleFormSubmit(e)}>
 			{
 				settings ? Object.keys(settings).map(setting =>
 					<Setting setting={{[setting]: settings[setting]}} onChange={handleInputChange} /> ) : <h1>Salut Monde!</h1>
 			}
-			<input type="submit" value="do the thing!" />
+			<input type="submit" className="button-primary" value="do the thing!" />
 		</form>
 	)
 };

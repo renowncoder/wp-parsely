@@ -19,6 +19,8 @@ const Setting = ( { setting, onChange } ) => {
 	} else if ( typeof ( setting[ Object.keys( setting )[ 0 ] ] ) === 'object' ) {
 		input = <Select
 					values={ setting[ Object.keys( setting )[ 0 ] ] }
+					name={Object.keys( setting )[ 0 ]}
+					onChange={onChange}
 				/>;
 	}
 
