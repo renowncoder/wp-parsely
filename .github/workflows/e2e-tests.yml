@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  e2e-test:
     name: e2e against WordPress latest
     runs-on: ubuntu-latest
 

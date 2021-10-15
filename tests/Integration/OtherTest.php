@@ -148,11 +148,13 @@ final class OtherTest extends TestCase {
 		wp_print_scripts();
 		$output = ob_get_clean();
 
-		self::assertSame(
-			"<script data-cfasync=\"false\" type='text/javascript' data-parsely-site=\"blog.parsely.com\" src='https://cdn.parsely.com/keys/blog.parsely.com/p.js?ver=" . \Parsely::VERSION . "' id=\"parsely-cfg\"></script>\n",
-			$output,
-			'Failed to confirm script tag was printed correctly'
-		);
+		$expected = "<script data-cfasync=\"false\" type='text/javascript' data-parsely-site=\"blog.parsely.com\" src='https://cdn.parsely.com/keys/blog.parsely.com/p.js?ver=" . \Parsely::VERSION . "' id=\"parsely-cfg\"></script>\n";
+		if ( version_compare( $GLOBALS['wp_version'], '5.5', '<' ) ) {
+			// ID attribute was only added in WP 5.5. See https://core.trac.wordpress.org/ticket/48654.
+			$expected = "<script data-cfasync=\"false\" type='text/javascript' data-parsely-site=\"blog.parsely.com\" src='https://cdn.parsely.com/keys/blog.parsely.com/p.js?ver=" . \Parsely::VERSION . "'></script>\n";
+		}
+
+		self::assertSame( $expected, $output, 'Failed to confirm script tag was printed correctly' );
 	}
 
 	/**
@@ -234,22 +236,29 @@ final class OtherTest extends TestCase {
 		wp_print_scripts();
 		$output = ob_get_clean();
 
-
-		self::assertStringContainsString(
-			"<script type='text/javascript' id='wp-parsely-api-js-extra'>
+		$needle = "<script type='text/javascript' id='wp-parsely-api-js-extra'>
 /* <![CDATA[ */
 var wpParsely = {\"apikey\":\"blog.parsely.com\"};
 /* ]]> */
-</script>",
-			$output,
-			'Failed to confirm "localized" data were embedded'
-		);
+</script>";
+		if ( version_compare( $GLOBALS['wp_version'], '5.5', '<' ) ) {
+			// ID attribute was only added in WP 5.5. See https://core.trac.wordpress.org/ticket/48654.
+			$needle = "<script type='text/javascript'>
+/* <![CDATA[ */
+var wpParsely = {\"apikey\":\"blog.parsely.com\"};
+/* ]]> */
+</script>";
+		}
 
-		self::assertStringContainsString(
-			"<script data-cfasync=\"false\" type='text/javascript' src='" . esc_url( plugin_dir_url( PARSELY_FILE ) ) . 'build/init-api.js?ver=' . \Parsely::VERSION . "' id='wp-parsely-api-js'></script>",
-			$output,
-			'Failed to confirm script tag was printed correctly'
-		);
+		self::assertStringContainsString( $needle, $output, 'Failed to confirm "localized" data were embedded' );
+
+		$needle = "<script data-cfasync=\"false\" type='text/javascript' src='" . esc_url( plugin_dir_url( PARSELY_FILE ) ) . 'build/init-api.js?ver=' . \Parsely::VERSION . "' id='wp-parsely-api-js'></script>";
+		if ( version_compare( $GLOBALS['wp_version'], '5.5', '<' ) ) {
+			// ID attribute was only added in WP 5.5. See https://core.trac.wordpress.org/ticket/48654.
+			$needle = "<script data-cfasync=\"false\" type='text/javascript' src='" . esc_url( plugin_dir_url( PARSELY_FILE ) ) . 'build/init-api.js?ver=' . \Parsely::VERSION . "'></script>";
+		}
+
+		self::assertStringContainsString( $needle, $output, 'Failed to confirm script tag was printed correctly' );
 	}
 
 	/**

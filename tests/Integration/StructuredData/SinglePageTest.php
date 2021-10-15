@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Parsely\Tests\Integration\StructuredData;
 
+use Parsely;
+
 /**
  * Structured Data Tests for single Pages.
  *
@@ -37,23 +39,18 @@ final class SinglePageTest extends NonPostTestCase {
 	 */
 	public function test_single_page(): void {
 		// Setup Parsley object.
-		$parsely         = new \Parsely();
-		$parsely_options = get_option( \Parsely::OPTIONS_KEY );
+		$parsely         = new Parsely();
+		$parsely_options = get_option( Parsely::OPTIONS_KEY );
 
 		// Insert a single page.
 		$page_id = self::factory()->post->create(
 			array(
 				'post_type'  => 'page',
 				'post_title' => 'Single Page',
-				'post_name'  => 'foo',
+				'post_name'  => 'foobar',
 			)
 		);
 		$page    = get_post( $page_id );
-
-		// Set permalinks, as Parsely currently strips ?page_id=... from the URL property.
-		// See https://github.com/Parsely/wp-parsely/issues/151.
-		global $wp_rewrite;
-		$wp_rewrite->set_permalink_structure( '/%postname%/' );
 
 		// Make a request to that page to set the global $wp_query object.
 		$this->go_to( get_permalink( $page_id ) );
@@ -67,9 +64,6 @@ final class SinglePageTest extends NonPostTestCase {
 		// The headline should be the post_title of the Page.
 		self::assertEquals( 'Single Page', $structured_data['headline'] );
 		self::assertEquals( get_permalink( $page_id ), $structured_data['url'] );
-		self::assertQueryTrue( 'is_page', 'is_singular' );
-
-		// Reset permalinks to Plain.
-		$wp_rewrite->set_permalink_structure( '' );
+		$this->assertQueryTrue( 'is_page', 'is_singular' );
 	}
 }

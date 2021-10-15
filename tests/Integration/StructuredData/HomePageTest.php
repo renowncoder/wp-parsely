@@ -59,6 +59,11 @@ final class HomePageTest extends NonPostTestCase {
 		);
 		$page    = get_post( $page_id );
 
+		// Set as page as posts archive on home page.
+		update_option( 'show_on_front', 'posts' );
+		update_option( 'page_for_posts', $page_id );
+		update_option( 'page_on_front', 0 );
+
 		// Make a request to the root of the site to set the global $wp_query object.
 		$this->go_to( '/' );
 
@@ -71,6 +76,9 @@ final class HomePageTest extends NonPostTestCase {
 		// The headline should be the name of the site, not the post_title of the Page.
 		self::assertEquals( 'Test Blog', $structured_data['headline'] );
 		self::assertEquals( home_url(), $structured_data['url'] );
+		$this->assertQueryTrue( 'is_home', 'is_front_page' );
+
+		_reset_front_page_settings_for_post( $page_id );
 	}
 
 	/**
@@ -106,6 +114,11 @@ final class HomePageTest extends NonPostTestCase {
 		global $wp_rewrite;
 		$wp_rewrite->set_permalink_structure( '/%postname%/' );
 
+		// Set as page as posts archive on home page.
+		update_option( 'show_on_front', 'posts' );
+		update_option( 'page_for_posts', $page_id );
+		update_option( 'page_on_front', 0 );
+
 		// Set the homepage to show 1 post per page.
 		update_option( 'posts_per_page', 1 );
 
@@ -122,6 +135,9 @@ final class HomePageTest extends NonPostTestCase {
 		self::assertEquals( 'Test Blog', $structured_data['headline'] );
 		// The URL should be the current page, not the home url.
 		self::assertEquals( home_url( '/page/2' ), $structured_data['url'] );
+		$this->assertQueryTrue( 'is_home', 'is_front_page', 'is_paged' );
+
+		_reset_front_page_settings_for_post( $page_id );
 	}
 
 	/**
@@ -156,9 +172,10 @@ final class HomePageTest extends NonPostTestCase {
 		);
 		$page    = get_post( $page_id );
 
-		// Set that page as the homepage Page.
+		// Set that page as the homepage static Page.
 		update_option( 'show_on_front', 'page' );
 		update_option( 'page_on_front', $page_id );
+		update_option( 'page_for_posts', 0 );
 
 		// Make a request to the root of the site to set the global $wp_query object.
 		$this->go_to( '/' );
@@ -174,6 +191,9 @@ final class HomePageTest extends NonPostTestCase {
 		self::assertEquals( home_url(), $structured_data['url'] );
 		// The metadata '@type' for the context should be 'WebPage' for the homepage.
 		self::assertSame( 'WebPage', $structured_data['@type'] );
+		$this->assertQueryTrue( 'is_page', 'is_front_page', 'is_singular' );
+
+		_reset_front_page_settings_for_post( $page_id );
 	}
 
 	/**

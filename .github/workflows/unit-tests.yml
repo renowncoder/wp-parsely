@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  unit-test:
     name: PHP ${{ matrix.php }}
     # ubuntu-20.04 / ubuntu-latest includes MySQL 8, which has issues with PHP < 7.4. Has PHP 7.4-8.0
     # ubuntu-18.04 includes PHP versions 7.1-8.0.

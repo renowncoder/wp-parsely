@@ -11,8 +11,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    name: PHP ${{ matrix.php }}
+  integration-test:
+    name: WP ${{ matrix.wordpress }} on PHP ${{ matrix.php }}
     # ubuntu-20.04 / ubuntu-latest includes MySQL 8, which has issues with PHP < 7.4. Has PHP 7.4-8.0
     # ubuntu-18.04 includes PHP versions 7.1-8.0.
     # See https://setup-php.com/i/452
@@ -32,20 +32,31 @@ jobs:
       # - coverage: Whether to run the tests with code coverage.
       # - experimental: Whether the build is "allowed to fail".
       matrix:
-        php: ['7.1', '7.2', '7.3', '7.4']
+        wordpress: [5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, trunk]
+        php: [7.1, 7.2, 7.3, 7.4]
         coverage: [none]
         experimental: [false]
+        exclude:
+          # Exclude known incompatibilities in the matrix.
+          # See https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/
+          - php: 7.4
+            wordpress: 5.2
         include:
           # Separate out PHP 8.0, so it can run with code coverage.
           - php: '8.0'
+            wordpress: trunk
             coverage: pcov
             extensions: pcov
             ini-values: pcov.directory=., "pcov.exclude=\"~(vendor|tests)~\""
             experimental: false
-          - php: '8.1'
+          # Separate out PHP 8.1, as it can only run on WP trunk/5.9.
+          - php: 8.1
+            wordpress: trunk
             coverage: none
             experimental: false
-          - php: '8.2'
+          # Separate out PHP 8.2, as it can only run on WP trunk/5.9 and is allowed to fail.
+          - php: 8.2
+            wordpress: trunk
             coverage: none
             experimental: true
       fail-fast: false
@@ -68,6 +79,10 @@ jobs:
       - name: Setup Problem Matchers for PHPUnit
         run: echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
+      - name: Force PHPUnit on WP <= 5.8
+        if: ${{ matrix.wordpress <= 5.8 }}
+        run: composer require phpunit/phpunit:^7
+
       - name: Install Composer dependencies for PHP < 8.2
         if: ${{ matrix.php < 8.2 }}
         uses: ramsey/composer-install@v1
@@ -82,7 +97,7 @@ jobs:
         run: sudo systemctl start mysql.service
 
       - name: Prepare environment for integration tests
-        run: composer prepare-ci
+        run: bash bin/install-wp-tests.sh wordpress_test root root localhost ${{ matrix.wordpress }}
 
       - name: Run integration tests (single site)
         if: ${{ matrix.php != 8.0 }}
